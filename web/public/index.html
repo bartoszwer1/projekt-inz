@@ -5,34 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Sterowanie oświetleniem</title>
     <link rel="stylesheet" href="css/main.css">
-    <script src="js/script.js"></script>
+    <script src="js/script.js" defer></script>
 </head>
 <body>
   <h1>Sterowanie oświetleniem</h1>
-  <div>
-    <label for="roomSelect">Pomieszczenie:</label>
-    <select id="roomSelect">
-      <option value="0">Pomieszczenie 1</option>
-      <option value="1">Pomieszczenie 2</option>
-      <option value="2">Pomieszczenie 3</option>
-      <option value="3">Pomieszczenie 4</option>
-      <option value="4">Pomieszczenie 5</option>
-    </select>
-  </div>
-  
-  <div>
-    <label>Temperatura barwy (K): <span id="cctVal">5000</span></label><br>
-    <input type="range" id="cctRange" min="2300" max="7500" value="5000" />
-  </div>
-  
-  <div>
-    <label>Jasność (%): <span id="brightVal">50</span></label><br>
-    <input type="range" id="brightRange" min="0" max="100" value="50" />
-  </div>
-  
-  <button id="applyBtn">Zastosuj</button>
-  
-  <p id="result"></p>
 
+  <div class="tabs">
+    <button class="tab-button active" data-tab="rooms">Pomieszczenia</button>
+    <button class="tab-button" data-tab="building">Budynek</button>
+  </div>
+
+  <div class="tab-content" id="rooms" style="display:block;">
+    <div id="roomsContainer"></div>
+  </div>
+  <div class="tab-content" id="building">
+    <div class="card">
+      <label>Temperatura barwy budynku (K): <span id="buildingCctVal">5000</span></label><br>
+      <input type="range" id="buildingCctRange" min="2300" max="7500" value="5000" />
+    </div>
+    <div class="card">
+      <label>Jasność budynku (%): <span id="buildingBrightVal">50</span></label><br>
+      <input type="range" id="buildingBrightRange" min="0" max="100" value="50" />
+    </div>
+    <div class="card">
+      <button id="alarmBtn" class="alarm">Alarm</button>
+      <button id="evacBtn" class="evacuation">Ewakuacja</button>
+    </div>
+  </div>
+
+  <p id="result"></p>
 </body>
 </html>

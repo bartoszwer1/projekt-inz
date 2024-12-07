@@ -1,0 +1,71 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    color: #333;
+  }
+  
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .tabs {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .tab-button {
+    background: #ccc;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    outline: none;
+    margin: 0 5px;
+  }
+  
+  .tab-button.active {
+    background: #888;
+    color: #fff;
+  }
+  
+  .tab-content {
+    display: none;
+  }
+  
+  .card {
+    background: #f9f9f9;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+  }
+  
+  input[type=range] {
+    width: 100%;
+  }
+  
+  button {
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+  }
+  
+  button.alarm {
+    background: #d9534f;
+    color: #fff;
+  }
+  
+  button.evacuation {
+    background: #5cb85c;
+    color: #fff;
+  }
+  
+  #result {
+    margin-top: 20px;
+    font-weight: bold;
+    color: #d9534f;
+    text-align: center;
+  }
