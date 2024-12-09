@@ -5,7 +5,7 @@ import 'dart:convert'; // Import for JSON parsing
 
 void main() {
   runApp(MaterialApp(
-    home: SterownikOsw(),
+    home: const SterownikOsw(),
     debugShowCheckedModeBanner: false,
     theme: ThemeData.dark().copyWith(
       primaryColor: Colors.tealAccent,
@@ -47,6 +47,8 @@ void main() {
 }
 
 class SterownikOsw extends StatefulWidget {
+  const SterownikOsw({super.key});
+
   @override
   State<SterownikOsw> createState() => _SterownikOswState();
 }
@@ -564,7 +566,7 @@ class _SterownikOswState extends State<SterownikOsw>
                           ? () => pickTime(context, true, true, null)
                           : null,
                       child: Text(buildingOnTime != null
-                          ? "${buildingOnTime!.format(context)}"
+                          ? buildingOnTime!.format(context)
                           : "Ustaw"),
                     ),
                     const SizedBox(width: 20),
@@ -574,7 +576,7 @@ class _SterownikOswState extends State<SterownikOsw>
                           ? () => pickTime(context, false, true, null)
                           : null,
                       child: Text(buildingOffTime != null
-                          ? "${buildingOffTime!.format(context)}"
+                          ? buildingOffTime!.format(context)
                           : "Ustaw"),
                     ),
                   ],
@@ -598,7 +600,7 @@ class _SterownikOswState extends State<SterownikOsw>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Pomieszczenie 1',
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold)),
                     Switch(
                       value: scheduleEnabledRooms[0],
@@ -619,7 +621,7 @@ class _SterownikOswState extends State<SterownikOsw>
                           ? () => pickTime(context, true, false, 0)
                           : null,
                       child: Text(room0OnTime != null
-                          ? "${room0OnTime!.format(context)}"
+                          ? room0OnTime!.format(context)
                           : "Ustaw"),
                     ),
                     const SizedBox(width: 20),
@@ -629,7 +631,7 @@ class _SterownikOswState extends State<SterownikOsw>
                           ? () => pickTime(context, false, false, 0)
                           : null,
                       child: Text(room0OffTime != null
-                          ? "${room0OffTime!.format(context)}"
+                          ? room0OffTime!.format(context)
                           : "Ustaw"),
                     ),
                   ],
@@ -772,9 +774,9 @@ class _SterownikOswState extends State<SterownikOsw>
           bottom: TabBar(
             controller: _tabController,
             indicatorColor: Colors.tealAccent,
-            tabs: [
-              const Tab(text: 'Oświetlenie'),
-              const Tab(text: 'Harmonogram'),
+            tabs: const [
+              Tab(text: 'Oświetlenie'),
+              Tab(text: 'Harmonogram'),
             ],
           ),
         ),
