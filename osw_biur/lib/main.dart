@@ -9,8 +9,8 @@ void main() {
     debugShowCheckedModeBanner: false,
     theme: ThemeData.dark().copyWith(
       primaryColor: Colors.tealAccent,
-      scaffoldBackgroundColor: Color(0xFF121212),
-      appBarTheme: AppBarTheme(
+      scaffoldBackgroundColor: const Color(0xFF121212),
+      appBarTheme: const AppBarTheme(
         backgroundColor: Color(0xFF1F1F1F),
         elevation: 0,
       ),
@@ -21,25 +21,25 @@ void main() {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8), // Mniejsze zaokrąglenie
           ),
-          padding: EdgeInsets.symmetric(
+          padding: const EdgeInsets.symmetric(
               horizontal: 16, vertical: 8), // Mniejsze paddingi
-          textStyle: TextStyle(
+          textStyle: const TextStyle(
             fontSize: 14, // Mniejszy rozmiar czcionki
             fontWeight: FontWeight.bold,
           ),
         ),
       ),
-      cardColor: Color(0xFF1E1E1E),
+      cardColor: const Color(0xFF1E1E1E),
       dividerColor: Colors.grey[700],
       sliderTheme: SliderThemeData(
         activeTrackColor: Colors.tealAccent,
         inactiveTrackColor: Colors.grey,
         thumbColor: Colors.tealAccent,
         overlayColor: Colors.tealAccent.withAlpha(32),
-        thumbShape: RoundSliderThumbShape(enabledThumbRadius: 10.0),
-        overlayShape: RoundSliderOverlayShape(overlayRadius: 20.0),
+        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10.0),
+        overlayShape: const RoundSliderOverlayShape(overlayRadius: 20.0),
       ),
-      textTheme: TextTheme(
+      textTheme: const TextTheme(
         bodyMedium: TextStyle(color: Colors.white),
       ),
     ),
@@ -91,15 +91,15 @@ class _SterownikOswState extends State<SterownikOsw>
     fetchLight();
     fetchTime();
 
-    lightTimer = Timer.periodic(Duration(seconds: 60), (timer) {
+    lightTimer = Timer.periodic(const Duration(seconds: 60), (timer) {
       fetchLight();
     });
 
-    timeTimer = Timer.periodic(Duration(minutes: 1), (timer) {
+    timeTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
       fetchTime();
     });
 
-    scheduleTimer = Timer.periodic(Duration(minutes: 1), (timer) {
+    scheduleTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
       checkSchedule();
     });
   }
@@ -204,11 +204,11 @@ class _SterownikOswState extends State<SterownikOsw>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Sukces'),
+        title: const Text('Sukces'),
         content: Text(msg),
         actions: [
           TextButton(
-            child: Text('OK'),
+            child: const Text('OK'),
             onPressed: () => Navigator.pop(context),
           ),
         ],
@@ -220,11 +220,11 @@ class _SterownikOswState extends State<SterownikOsw>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Błąd'),
+        title: const Text('Błąd'),
         content: Text(msg),
         actions: [
           TextButton(
-            child: Text('OK'),
+            child: const Text('OK'),
             onPressed: () => Navigator.pop(context),
           ),
         ],
@@ -239,15 +239,16 @@ class _SterownikOswState extends State<SterownikOsw>
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text("Wprowadź temperaturę barwy (K)"),
+          title: const Text("Wprowadź temperaturę barwy (K)"),
           content: TextField(
             controller: controller,
             keyboardType: TextInputType.number,
-            decoration: InputDecoration(hintText: "2300 - 7500"),
+            decoration: const InputDecoration(hintText: "2300 - 7500"),
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(context), child: Text("Anuluj")),
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Anuluj")),
             TextButton(
               onPressed: () {
                 int? entered = int.tryParse(controller.text);
@@ -262,7 +263,7 @@ class _SterownikOswState extends State<SterownikOsw>
                   showError("Wprowadź wartość w zakresie 2300 - 7500 K");
                 }
               },
-              child: Text("Zatwierdź"),
+              child: const Text("Zatwierdź"),
             ),
           ],
         );
@@ -278,15 +279,16 @@ class _SterownikOswState extends State<SterownikOsw>
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text("Wprowadź temperaturę barwy budynku (K)"),
+          title: const Text("Wprowadź temperaturę barwy budynku (K)"),
           content: TextField(
             controller: controller,
             keyboardType: TextInputType.number,
-            decoration: InputDecoration(hintText: "2300 - 7500"),
+            decoration: const InputDecoration(hintText: "2300 - 7500"),
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(context), child: Text("Anuluj")),
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Anuluj")),
             TextButton(
               onPressed: () {
                 int? entered = int.tryParse(controller.text);
@@ -300,7 +302,7 @@ class _SterownikOswState extends State<SterownikOsw>
                   showError("Wprowadź wartość w zakresie 2300 - 7500 K");
                 }
               },
-              child: Text("Zatwierdź"),
+              child: const Text("Zatwierdź"),
             ),
           ],
         );
@@ -310,29 +312,31 @@ class _SterownikOswState extends State<SterownikOsw>
 
   Widget buildRoomControl(int roomIndex) {
     return Card(
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ExpansionTile(
         title: Text(
           "Pomieszczenie ${roomIndex + 1}",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // CCT
                 Row(
                   children: [
-                    Text('Temperatura barwy: ', style: TextStyle(fontSize: 16)),
+                    const Text('Temperatura barwy: ',
+                        style: TextStyle(fontSize: 16)),
                     Expanded(
                       child: GestureDetector(
                         onTap: () => showCctInputDialog(roomIndex),
                         child: Text(
                           "${roomsCct[roomIndex].toInt()}K",
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.tealAccent,
                             fontSize: 16,
                             decoration: TextDecoration.underline,
@@ -342,7 +346,7 @@ class _SterownikOswState extends State<SterownikOsw>
                     ),
                   ],
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Slider(
                   activeColor: Colors.tealAccent,
                   inactiveColor: Colors.grey,
@@ -358,10 +362,10 @@ class _SterownikOswState extends State<SterownikOsw>
                         roomsBrightness[roomIndex]);
                   },
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 // Brightness
                 Text('Jasność: ${roomsBrightness[roomIndex].toInt()}%',
-                    style: TextStyle(fontSize: 16)),
+                    style: const TextStyle(fontSize: 16)),
                 Slider(
                   activeColor: Colors.tealAccent,
                   inactiveColor: Colors.grey,
@@ -388,35 +392,36 @@ class _SterownikOswState extends State<SterownikOsw>
 
   Widget buildOswiezenieTab() {
     return ListView(
-      padding: EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.only(top: 16),
       children: [
         // Kafelek Budynek
         Card(
-          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: ExpansionTile(
-            title: Text(
+            title: const Text(
               "Budynek",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             children: [
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // CCT
                     Row(
                       children: [
-                        Text('Temperatura barwy: ',
+                        const Text('Temperatura barwy: ',
                             style: TextStyle(fontSize: 16)),
                         Expanded(
                           child: GestureDetector(
                             onTap: showBudynekCctInputDialog,
                             child: Text(
                               "${buildingCct.toInt()}K",
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Colors.tealAccent,
                                 fontSize: 16,
                                 decoration: TextDecoration.underline,
@@ -426,7 +431,7 @@ class _SterownikOswState extends State<SterownikOsw>
                         ),
                       ],
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Slider(
                       activeColor: Colors.tealAccent,
                       inactiveColor: Colors.grey,
@@ -441,10 +446,10 @@ class _SterownikOswState extends State<SterownikOsw>
                         setBuilding(buildingCct, buildingBrightness);
                       },
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     // Brightness
                     Text('Jasność: ${buildingBrightness.toInt()}%',
-                        style: TextStyle(fontSize: 16)),
+                        style: const TextStyle(fontSize: 16)),
                     Slider(
                       activeColor: Colors.tealAccent,
                       inactiveColor: Colors.grey,
@@ -470,41 +475,42 @@ class _SterownikOswState extends State<SterownikOsw>
         ...List.generate(roomsCct.length, (index) => buildRoomControl(index)),
         // Kafelek Dodatkowe
         Card(
-          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: ExpansionTile(
-            title: Text(
+            title: const Text(
               "Dodatkowe",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             children: [
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton.icon(
                       onPressed: setAlarm,
-                      icon: Icon(Icons.warning, color: Colors.white),
-                      label: Text('Alarm'),
+                      icon: const Icon(Icons.warning, color: Colors.white),
+                      label: const Text('Alarm'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.redAccent,
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        textStyle: TextStyle(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        textStyle: const TextStyle(
                             fontSize: 14, fontWeight: FontWeight.bold),
                       ),
                     ),
                     ElevatedButton.icon(
                       onPressed: setEvacuation,
-                      icon: Icon(Icons.exit_to_app, color: Colors.white),
-                      label: Text('Ewakuacja'),
+                      icon: const Icon(Icons.exit_to_app, color: Colors.white),
+                      label: const Text('Ewakuacja'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        textStyle: TextStyle(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        textStyle: const TextStyle(
                             fontSize: 14, fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -520,15 +526,15 @@ class _SterownikOswState extends State<SterownikOsw>
 
   Widget buildHarmonogramTab() {
     return ListView(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       children: [
         // Harmonogram dla budynku
         Card(
-          color: Color(0xFF1E1E1E),
+          color: const Color(0xFF1E1E1E),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -536,7 +542,7 @@ class _SterownikOswState extends State<SterownikOsw>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Budynek',
+                    const Text('Budynek',
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold)),
                     Switch(
@@ -549,10 +555,10 @@ class _SterownikOswState extends State<SterownikOsw>
                     ),
                   ],
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Row(
                   children: [
-                    Text('Włącz o: ', style: TextStyle(fontSize: 16)),
+                    const Text('Włącz o: ', style: TextStyle(fontSize: 16)),
                     ElevatedButton(
                       onPressed: scheduleEnabledBuilding
                           ? () => pickTime(context, true, true, null)
@@ -561,8 +567,8 @@ class _SterownikOswState extends State<SterownikOsw>
                           ? "${buildingOnTime!.format(context)}"
                           : "Ustaw"),
                     ),
-                    SizedBox(width: 20),
-                    Text('Wyłącz o: ', style: TextStyle(fontSize: 16)),
+                    const SizedBox(width: 20),
+                    const Text('Wyłącz o: ', style: TextStyle(fontSize: 16)),
                     ElevatedButton(
                       onPressed: scheduleEnabledBuilding
                           ? () => pickTime(context, false, true, null)
@@ -577,22 +583,22 @@ class _SterownikOswState extends State<SterownikOsw>
             ),
           ),
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         // Harmonogram dla pomieszczenia 1
         Card(
-          color: Color(0xFF1E1E1E),
+          color: const Color(0xFF1E1E1E),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Pomieszczenie 1',
-                        style: TextStyle(
+                    const Text('Pomieszczenie 1',
+                        style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold)),
                     Switch(
                       value: scheduleEnabledRooms[0],
@@ -604,10 +610,10 @@ class _SterownikOswState extends State<SterownikOsw>
                     ),
                   ],
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Row(
                   children: [
-                    Text('Włącz o: ', style: TextStyle(fontSize: 16)),
+                    const Text('Włącz o: ', style: TextStyle(fontSize: 16)),
                     ElevatedButton(
                       onPressed: scheduleEnabledRooms[0]
                           ? () => pickTime(context, true, false, 0)
@@ -616,8 +622,8 @@ class _SterownikOswState extends State<SterownikOsw>
                           ? "${room0OnTime!.format(context)}"
                           : "Ustaw"),
                     ),
-                    SizedBox(width: 20),
-                    Text('Wyłącz o: ', style: TextStyle(fontSize: 16)),
+                    const SizedBox(width: 20),
+                    const Text('Wyłącz o: ', style: TextStyle(fontSize: 16)),
                     ElevatedButton(
                       onPressed: scheduleEnabledRooms[0]
                           ? () => pickTime(context, false, false, 0)
@@ -697,11 +703,12 @@ class _SterownikOswState extends State<SterownikOsw>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Odczyt światła'),
+        title: const Text('Odczyt światła'),
         content: Text(
             'Odczyt światła: $lightPercent%\nProponowana moc oświetlenia: $proponowana%'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'))
+          TextButton(
+              onPressed: () => Navigator.pop(context), child: const Text('OK'))
         ],
       ),
     );
@@ -711,11 +718,12 @@ class _SterownikOswState extends State<SterownikOsw>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Informacje'),
+        title: const Text('Informacje'),
         content: Text(
             'Połączono z ESP32 pod adresem: $espIp\nSterownik oświetlenia - projekt-inz\nCzas z DCF77: $currentHour:${currentMinute.toString().padLeft(2, '0')}'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'))
+          TextButton(
+              onPressed: () => Navigator.pop(context), child: const Text('OK'))
         ],
       ),
     );
@@ -726,15 +734,15 @@ class _SterownikOswState extends State<SterownikOsw>
     // Ikona pogody w zależności od lightPercent
     Widget weatherIcon;
     if (lightPercent > 80) {
-      weatherIcon = Icon(Icons.sunny, color: Colors.yellowAccent);
+      weatherIcon = const Icon(Icons.sunny, color: Colors.yellowAccent);
     } else if (lightPercent > 60) {
-      weatherIcon = Icon(Icons.wb_sunny_outlined, color: Colors.yellow);
+      weatherIcon = const Icon(Icons.wb_sunny_outlined, color: Colors.yellow);
     } else if (lightPercent > 40) {
-      weatherIcon = Icon(Icons.cloud_outlined, color: Colors.blueAccent);
+      weatherIcon = const Icon(Icons.cloud_outlined, color: Colors.blueAccent);
     } else if (lightPercent > 20) {
-      weatherIcon = Icon(Icons.cloud, color: Colors.white54);
+      weatherIcon = const Icon(Icons.cloud, color: Colors.white54);
     } else {
-      weatherIcon = Icon(Icons.nights_stay, color: Colors.blueGrey);
+      weatherIcon = const Icon(Icons.nights_stay, color: Colors.blueGrey);
     }
 
     return DefaultTabController(
@@ -748,15 +756,15 @@ class _SterownikOswState extends State<SterownikOsw>
                 onPressed:
                     showLightDialog, // Open light dialog on weather icon click
               ),
-              SizedBox(width: 8),
-              Expanded(
+              const SizedBox(width: 8),
+              const Expanded(
                 child: Text(
                   'Sterowanie oświetleniem',
                   textAlign: TextAlign.center,
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.info_outline),
+                icon: const Icon(Icons.info_outline),
                 onPressed: showInfoDialog,
               ),
             ],
@@ -765,8 +773,8 @@ class _SterownikOswState extends State<SterownikOsw>
             controller: _tabController,
             indicatorColor: Colors.tealAccent,
             tabs: [
-              Tab(text: 'Oświetlenie'),
-              Tab(text: 'Harmonogram'),
+              const Tab(text: 'Oświetlenie'),
+              const Tab(text: 'Harmonogram'),
             ],
           ),
         ),
