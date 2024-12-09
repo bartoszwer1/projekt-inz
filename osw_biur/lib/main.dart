@@ -5,7 +5,7 @@ import 'dart:convert'; // Import for JSON parsing
 
 void main() {
   runApp(MaterialApp(
-    home: SterownikOsw(),
+    home: const SterownikOsw(),
     debugShowCheckedModeBanner: false,
     theme: ThemeData.dark().copyWith(
       primaryColor: Colors.tealAccent,
@@ -80,8 +80,10 @@ class _SterownikOswState extends State<SterownikOsw>
   Timer? scheduleTimer;
 
   // Schedule enabled flags
-  bool scheduleEnabledBuilding = false;
-  List<bool> scheduleEnabledRooms = [false, false, false, false, false];
+  bool scheduleEnabledBuildingOn = false;
+  bool scheduleEnabledBuildingOff = false;
+  List<bool> scheduleEnabledRoomsOn = [false, false, false, false, false];
+  List<bool> scheduleEnabledRoomsOff = [false, false, false, false, false];
 
   @override
   void initState() {
@@ -518,47 +520,89 @@ class _SterownikOswState extends State<SterownikOsw>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Schedule toggle and time pickers
+                // Schedule toggle and time pickers for Building
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Harmonogram dla budynku',
+                    const Text('Budynek',
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold)),
-                    Switch(
-                      value: scheduleEnabledBuilding,
-                      onChanged: (bool value) {
-                        setState(() {
-                          scheduleEnabledBuilding = value;
-                        });
-                      },
-                    ),
+                    // Green dot if any schedule is enabled
+                    (scheduleEnabledBuildingOn || scheduleEnabledBuildingOff)
+                        ? const Icon(
+                            Icons.circle,
+                            color: Colors.green,
+                            size: 12,
+                          )
+                        : Container(),
                   ],
                 ),
                 const SizedBox(height: 10),
+                // Harmonogram Włączenia
                 Row(
                   children: [
-                    const Text('Włącz o: ', style: TextStyle(fontSize: 16)),
-                    ElevatedButton(
-                      onPressed: scheduleEnabledBuilding
-                          ? () => pickTime(context, true, true, null)
-                          : null,
-                      child: Text(buildingOnTime != null
-                          ? buildingOnTime!.format(context)
-                          : "Ustaw"),
-                    ),
-                    const SizedBox(width: 20),
-                    const Text('Wyłącz o: ', style: TextStyle(fontSize: 16)),
-                    ElevatedButton(
-                      onPressed: scheduleEnabledBuilding
-                          ? () => pickTime(context, false, true, null)
-                          : null,
-                      child: Text(buildingOffTime != null
-                          ? buildingOffTime!.format(context)
-                          : "Ustaw"),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Switch(
+                            value: scheduleEnabledBuildingOn,
+                            onChanged: (bool value) {
+                              setState(() {
+                                scheduleEnabledBuildingOn = value;
+                              });
+                            },
+                          ),
+                          const Text('Włączanie'),
+                        ],
+                      ),
                     ),
                   ],
                 ),
+                if (scheduleEnabledBuildingOn)
+                  Row(
+                    children: [
+                      const Text('Włącz o: ', style: TextStyle(fontSize: 16)),
+                      ElevatedButton(
+                        onPressed: () => pickTime(context, true, true, null),
+                        child: Text(buildingOnTime != null
+                            ? buildingOnTime!.format(context)
+                            : "Ustaw"),
+                      ),
+                    ],
+                  ),
+                const SizedBox(height: 10),
+                // Harmonogram Wyłączenia
+                Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Switch(
+                            value: scheduleEnabledBuildingOff,
+                            onChanged: (bool value) {
+                              setState(() {
+                                scheduleEnabledBuildingOff = value;
+                              });
+                            },
+                          ),
+                          const Text('Wyłączanie'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                if (scheduleEnabledBuildingOff)
+                  Row(
+                    children: [
+                      const Text('Wyłącz o: ', style: TextStyle(fontSize: 16)),
+                      ElevatedButton(
+                        onPressed: () => pickTime(context, false, true, null),
+                        child: Text(buildingOffTime != null
+                            ? buildingOffTime!.format(context)
+                            : "Ustaw"),
+                      ),
+                    ],
+                  ),
               ],
             ),
           ),
@@ -566,58 +610,103 @@ class _SterownikOswState extends State<SterownikOsw>
         const SizedBox(height: 20),
         // Harmonogram dla wszystkich pomieszczeń
         ...List.generate(roomsCct.length, (index) {
+          bool isAnyScheduleEnabled =
+              scheduleEnabledRoomsOn[index] || scheduleEnabledRoomsOff[index];
           return Card(
             color: const Color(0xFF1E1E1E),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Schedule toggle and time pickers
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: ExpansionTile(
+              leading: isAnyScheduleEnabled
+                  ? const Icon(
+                      Icons.circle,
+                      color: Colors.green,
+                      size: 12,
+                    )
+                  : null,
+              title: Text('Pomieszczenie ${index + 1}',
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold)),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Pomieszczenie ${index + 1}',
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
-                      Switch(
-                        value: scheduleEnabledRooms[index],
-                        onChanged: (bool value) {
-                          setState(() {
-                            scheduleEnabledRooms[index] = value;
-                          });
-                        },
+                      // Harmonogram Włączenia
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Switch(
+                                  value: scheduleEnabledRoomsOn[index],
+                                  onChanged: (bool value) {
+                                    setState(() {
+                                      scheduleEnabledRoomsOn[index] = value;
+                                    });
+                                  },
+                                ),
+                                const Text('Włączanie'),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
+                      if (scheduleEnabledRoomsOn[index])
+                        Row(
+                          children: [
+                            const Text('Włącz o: ',
+                                style: TextStyle(fontSize: 16)),
+                            ElevatedButton(
+                              onPressed: () =>
+                                  pickTime(context, true, false, index),
+                              child: Text(roomsOnTime[index] != null
+                                  ? roomsOnTime[index]!.format(context)
+                                  : "Ustaw"),
+                            ),
+                          ],
+                        ),
+                      const SizedBox(height: 10),
+                      // Harmonogram Wyłączenia
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Switch(
+                                  value: scheduleEnabledRoomsOff[index],
+                                  onChanged: (bool value) {
+                                    setState(() {
+                                      scheduleEnabledRoomsOff[index] = value;
+                                    });
+                                  },
+                                ),
+                                const Text('Wyłączanie'),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (scheduleEnabledRoomsOff[index])
+                        Row(
+                          children: [
+                            const Text('Wyłącz o: ',
+                                style: TextStyle(fontSize: 16)),
+                            ElevatedButton(
+                              onPressed: () =>
+                                  pickTime(context, false, false, index),
+                              child: Text(roomsOffTime[index] != null
+                                  ? roomsOffTime[index]!.format(context)
+                                  : "Ustaw"),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      const Text('Włącz o: ', style: TextStyle(fontSize: 16)),
-                      ElevatedButton(
-                        onPressed: scheduleEnabledRooms[index]
-                            ? () => pickTime(context, true, false, index)
-                            : null,
-                        child: Text(roomsOnTime[index] != null
-                            ? roomsOnTime[index]!.format(context)
-                            : "Ustaw"),
-                      ),
-                      const SizedBox(width: 20),
-                      const Text('Wyłącz o: ', style: TextStyle(fontSize: 16)),
-                      ElevatedButton(
-                        onPressed: scheduleEnabledRooms[index]
-                            ? () => pickTime(context, false, false, index)
-                            : null,
-                        child: Text(roomsOffTime[index] != null
-                            ? roomsOffTime[index]!.format(context)
-                            : "Ustaw"),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
         }),
@@ -630,33 +719,38 @@ class _SterownikOswState extends State<SterownikOsw>
     DateTime now = DateTime.now();
     TimeOfDay currentTime = TimeOfDay(hour: now.hour, minute: now.minute);
 
-    // Sprawdzenie harmonogramu dla budynku
-    if (scheduleEnabledBuilding) {
-      if (buildingOnTime != null &&
-          buildingOnTime!.hour == currentTime.hour &&
-          buildingOnTime!.minute == currentTime.minute) {
-        setBuilding(buildingCct, 100);
-      }
-      if (buildingOffTime != null &&
-          buildingOffTime!.hour == currentTime.hour &&
-          buildingOffTime!.minute == currentTime.minute) {
-        setBuilding(buildingCct, 0);
-      }
+    // Sprawdzenie harmonogramu dla budynku - Włączanie
+    if (scheduleEnabledBuildingOn &&
+        buildingOnTime != null &&
+        buildingOnTime!.hour == currentTime.hour &&
+        buildingOnTime!.minute == currentTime.minute) {
+      setBuilding(buildingCct, 100);
+    }
+
+    // Sprawdzenie harmonogramu dla budynku - Wyłączanie
+    if (scheduleEnabledBuildingOff &&
+        buildingOffTime != null &&
+        buildingOffTime!.hour == currentTime.hour &&
+        buildingOffTime!.minute == currentTime.minute) {
+      setBuilding(buildingCct, 0);
     }
 
     // Sprawdzenie harmonogramu dla wszystkich pomieszczeń
     for (int i = 0; i < roomsCct.length; i++) {
-      if (scheduleEnabledRooms[i]) {
-        if (roomsOnTime[i] != null &&
-            roomsOnTime[i]!.hour == currentTime.hour &&
-            roomsOnTime[i]!.minute == currentTime.minute) {
-          setRoom(i, roomsCct[i], 100);
-        }
-        if (roomsOffTime[i] != null &&
-            roomsOffTime[i]!.hour == currentTime.hour &&
-            roomsOffTime[i]!.minute == currentTime.minute) {
-          setRoom(i, roomsCct[i], 0);
-        }
+      // Włączanie
+      if (scheduleEnabledRoomsOn[i] &&
+          roomsOnTime[i] != null &&
+          roomsOnTime[i]!.hour == currentTime.hour &&
+          roomsOnTime[i]!.minute == currentTime.minute) {
+        setRoom(i, roomsCct[i], 100);
+      }
+
+      // Wyłączanie
+      if (scheduleEnabledRoomsOff[i] &&
+          roomsOffTime[i] != null &&
+          roomsOffTime[i]!.hour == currentTime.hour &&
+          roomsOffTime[i]!.minute == currentTime.minute) {
+        setRoom(i, roomsCct[i], 0);
       }
     }
   }
@@ -760,10 +854,8 @@ class _SterownikOswState extends State<SterownikOsw>
               ),
             ],
           ),
-          bottom: TabBar(
-            controller: _tabController,
-            indicatorColor: Colors.tealAccent,
-            tabs: const [
+          bottom: const TabBar(
+            tabs: [
               Tab(text: 'Oświetlenie'),
               Tab(text: 'Harmonogram'),
               Tab(text: 'Asystent'),
@@ -771,7 +863,6 @@ class _SterownikOswState extends State<SterownikOsw>
           ),
         ),
         body: TabBarView(
-          controller: _tabController,
           children: [
             buildOswiezenieTab(),
             buildHarmonogramTab(),
