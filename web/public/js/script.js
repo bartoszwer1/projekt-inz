@@ -1,4 +1,4 @@
-const espIp = "192.168.1.77"; // Zaktualizuj IP
+const espIp = "192.168.1.81"; // Zaktualizuj IP
 
 document.addEventListener('DOMContentLoaded', () => {
   const tabs = document.querySelectorAll('.tab-button');

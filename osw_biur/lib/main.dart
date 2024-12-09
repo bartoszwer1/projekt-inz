@@ -5,7 +5,7 @@ import 'dart:convert'; // Import for JSON parsing
 
 void main() {
   runApp(MaterialApp(
-    home: const SterownikOsw(),
+    home: SterownikOsw(),
     debugShowCheckedModeBanner: false,
     theme: ThemeData.dark().copyWith(
       primaryColor: Colors.tealAccent,
@@ -19,12 +19,12 @@ void main() {
           backgroundColor: Colors.teal,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8), // Mniejsze zaokrąglenie
+            borderRadius: BorderRadius.circular(8), // Smaller rounding
           ),
           padding: const EdgeInsets.symmetric(
-              horizontal: 16, vertical: 8), // Mniejsze paddingi
+              horizontal: 16, vertical: 8), // Smaller padding
           textStyle: const TextStyle(
-            fontSize: 14, // Mniejszy rozmiar czcionki
+            fontSize: 14, // Smaller font size
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -55,7 +55,7 @@ class SterownikOsw extends StatefulWidget {
 
 class _SterownikOswState extends State<SterownikOsw>
     with SingleTickerProviderStateMixin {
-  String espIp = "192.168.1.81"; // Zmień na IP Twojego ESP
+  String espIp = "192.168.1.81"; // Change to your ESP32 IP
 
   List<double> roomsCct = [3000, 4000, 5000, 6000, 7000];
   List<double> roomsBrightness = [50, 50, 50, 50, 50];
@@ -69,16 +69,14 @@ class _SterownikOswState extends State<SterownikOsw>
   int lightPercent = 50;
   Timer? lightTimer;
 
-  // DCF77 czas
-  int currentHour = 12;
-  int currentMinute = 34;
+  // System time
   Timer? timeTimer;
 
   // Harmonogram
   TimeOfDay? buildingOnTime;
   TimeOfDay? buildingOffTime;
-  TimeOfDay? room0OnTime;
-  TimeOfDay? room0OffTime;
+  List<TimeOfDay?> roomsOnTime = [null, null, null, null, null];
+  List<TimeOfDay?> roomsOffTime = [null, null, null, null, null];
   Timer? scheduleTimer;
 
   // Schedule enabled flags
@@ -88,17 +86,16 @@ class _SterownikOswState extends State<SterownikOsw>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this); // 2 tabs
+    _tabController = TabController(length: 3, vsync: this); // 3 tabs
 
     fetchLight();
-    fetchTime();
 
     lightTimer = Timer.periodic(const Duration(seconds: 60), (timer) {
       fetchLight();
     });
 
-    timeTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
-      fetchTime();
+    timeTimer = Timer.periodic(const Duration(seconds: 60), (timer) {
+      setState(() {}); // Update UI to show current time
     });
 
     scheduleTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
@@ -129,25 +126,6 @@ class _SterownikOswState extends State<SterownikOsw>
     } catch (e) {
       // Handle error silently or show error
       // print("Błąd podczas pobierania odczytu światła: $e");
-    }
-  }
-
-  Future<void> fetchTime() async {
-    try {
-      final url = Uri.http(espIp, '/time');
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final body = response.body;
-        // Parse JSON correctly
-        final jsonBody = json.decode(body);
-        setState(() {
-          currentHour = jsonBody['hour'];
-          currentMinute = jsonBody['minute'];
-        });
-      }
-    } catch (e) {
-      // Handle error silently or show error
-      // print("Błąd podczas pobierania czasu: $e");
     }
   }
 
@@ -544,7 +522,7 @@ class _SterownikOswState extends State<SterownikOsw>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Budynek',
+                    const Text('Harmonogram dla budynku',
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold)),
                     Switch(
@@ -586,101 +564,109 @@ class _SterownikOswState extends State<SterownikOsw>
           ),
         ),
         const SizedBox(height: 20),
-        // Harmonogram dla pomieszczenia 1
-        Card(
-          color: const Color(0xFF1E1E1E),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Pomieszczenie 1',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
-                    Switch(
-                      value: scheduleEnabledRooms[0],
-                      onChanged: (bool value) {
-                        setState(() {
-                          scheduleEnabledRooms[0] = value;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    const Text('Włącz o: ', style: TextStyle(fontSize: 16)),
-                    ElevatedButton(
-                      onPressed: scheduleEnabledRooms[0]
-                          ? () => pickTime(context, true, false, 0)
-                          : null,
-                      child: Text(room0OnTime != null
-                          ? room0OnTime!.format(context)
-                          : "Ustaw"),
-                    ),
-                    const SizedBox(width: 20),
-                    const Text('Wyłącz o: ', style: TextStyle(fontSize: 16)),
-                    ElevatedButton(
-                      onPressed: scheduleEnabledRooms[0]
-                          ? () => pickTime(context, false, false, 0)
-                          : null,
-                      child: Text(room0OffTime != null
-                          ? room0OffTime!.format(context)
-                          : "Ustaw"),
-                    ),
-                  ],
-                ),
-              ],
+        // Harmonogram dla wszystkich pomieszczeń
+        ...List.generate(roomsCct.length, (index) {
+          return Card(
+            color: const Color(0xFF1E1E1E),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Schedule toggle and time pickers
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Pomieszczenie ${index + 1}',
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      Switch(
+                        value: scheduleEnabledRooms[index],
+                        onChanged: (bool value) {
+                          setState(() {
+                            scheduleEnabledRooms[index] = value;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      const Text('Włącz o: ', style: TextStyle(fontSize: 16)),
+                      ElevatedButton(
+                        onPressed: scheduleEnabledRooms[index]
+                            ? () => pickTime(context, true, false, index)
+                            : null,
+                        child: Text(roomsOnTime[index] != null
+                            ? roomsOnTime[index]!.format(context)
+                            : "Ustaw"),
+                      ),
+                      const SizedBox(width: 20),
+                      const Text('Wyłącz o: ', style: TextStyle(fontSize: 16)),
+                      ElevatedButton(
+                        onPressed: scheduleEnabledRooms[index]
+                            ? () => pickTime(context, false, false, index)
+                            : null,
+                        child: Text(roomsOffTime[index] != null
+                            ? roomsOffTime[index]!.format(context)
+                            : "Ustaw"),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ),
+          );
+        }),
       ],
     );
   }
 
   void checkSchedule() {
-    // Korzystamy z currentHour, currentMinute pobranych z DCF77
-    TimeOfDay now = TimeOfDay(hour: currentHour, minute: currentMinute);
+    // Get current system time
+    DateTime now = DateTime.now();
+    TimeOfDay currentTime = TimeOfDay(hour: now.hour, minute: now.minute);
 
     // Sprawdzenie harmonogramu dla budynku
     if (scheduleEnabledBuilding) {
       if (buildingOnTime != null &&
-          buildingOnTime!.hour == now.hour &&
-          buildingOnTime!.minute == now.minute) {
+          buildingOnTime!.hour == currentTime.hour &&
+          buildingOnTime!.minute == currentTime.minute) {
         setBuilding(buildingCct, 100);
       }
       if (buildingOffTime != null &&
-          buildingOffTime!.hour == now.hour &&
-          buildingOffTime!.minute == now.minute) {
+          buildingOffTime!.hour == currentTime.hour &&
+          buildingOffTime!.minute == currentTime.minute) {
         setBuilding(buildingCct, 0);
       }
     }
 
-    // Sprawdzenie harmonogramu dla room0
-    if (scheduleEnabledRooms[0]) {
-      if (room0OnTime != null &&
-          room0OnTime!.hour == now.hour &&
-          room0OnTime!.minute == now.minute) {
-        setRoom(0, roomsCct[0], 100);
-      }
-      if (room0OffTime != null &&
-          room0OffTime!.hour == now.hour &&
-          room0OffTime!.minute == now.minute) {
-        setRoom(0, roomsCct[0], 0);
+    // Sprawdzenie harmonogramu dla wszystkich pomieszczeń
+    for (int i = 0; i < roomsCct.length; i++) {
+      if (scheduleEnabledRooms[i]) {
+        if (roomsOnTime[i] != null &&
+            roomsOnTime[i]!.hour == currentTime.hour &&
+            roomsOnTime[i]!.minute == currentTime.minute) {
+          setRoom(i, roomsCct[i], 100);
+        }
+        if (roomsOffTime[i] != null &&
+            roomsOffTime[i]!.hour == currentTime.hour &&
+            roomsOffTime[i]!.minute == currentTime.minute) {
+          setRoom(i, roomsCct[i], 0);
+        }
       }
     }
   }
 
   Future<void> pickTime(BuildContext context, bool isOnTime, bool isBuilding,
       int? roomIndex) async {
-    final picked =
-        await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
     if (picked != null) {
       setState(() {
         if (isBuilding) {
@@ -690,10 +676,10 @@ class _SterownikOswState extends State<SterownikOsw>
             buildingOffTime = picked;
           }
         } else {
-          if (isOnTime) {
-            room0OnTime = picked;
-          } else {
-            room0OffTime = picked;
+          if (isOnTime && roomIndex != null) {
+            roomsOnTime[roomIndex] = picked;
+          } else if (!isOnTime && roomIndex != null) {
+            roomsOffTime[roomIndex] = picked;
           }
         }
       });
@@ -717,12 +703,15 @@ class _SterownikOswState extends State<SterownikOsw>
   }
 
   void showInfoDialog() {
+    DateTime now = DateTime.now();
+    String formattedTime =
+        "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Informacje'),
         content: Text(
-            'Połączono z ESP32 pod adresem: $espIp\nSterownik oświetlenia - projekt-inz\nCzas z DCF77: $currentHour:${currentMinute.toString().padLeft(2, '0')}'),
+            'Połączono z ESP32 pod adresem: $espIp\nSterownik oświetlenia - projekt-inz\nCzas systemowy: $formattedTime'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context), child: const Text('OK'))
@@ -736,7 +725,7 @@ class _SterownikOswState extends State<SterownikOsw>
     // Ikona pogody w zależności od lightPercent
     Widget weatherIcon;
     if (lightPercent > 80) {
-      weatherIcon = const Icon(Icons.sunny, color: Colors.yellowAccent);
+      weatherIcon = const Icon(Icons.wb_sunny, color: Colors.yellowAccent);
     } else if (lightPercent > 60) {
       weatherIcon = const Icon(Icons.wb_sunny_outlined, color: Colors.yellow);
     } else if (lightPercent > 40) {
@@ -748,7 +737,7 @@ class _SterownikOswState extends State<SterownikOsw>
     }
 
     return DefaultTabController(
-      length: 2, // 2 tabs: Oświetlenie, Harmonogram
+      length: 3, // 3 tabs: Oświetlenie, Harmonogram, Asystent
       child: Scaffold(
         appBar: AppBar(
           title: Row(
@@ -777,6 +766,7 @@ class _SterownikOswState extends State<SterownikOsw>
             tabs: const [
               Tab(text: 'Oświetlenie'),
               Tab(text: 'Harmonogram'),
+              Tab(text: 'Asystent'),
             ],
           ),
         ),
@@ -785,8 +775,19 @@ class _SterownikOswState extends State<SterownikOsw>
           children: [
             buildOswiezenieTab(),
             buildHarmonogramTab(),
+            buildAsystentTab(), // Empty Asystent tab
           ],
         ),
+      ),
+    );
+  }
+
+  Widget buildAsystentTab() {
+    // Currently empty, for future use
+    return const Center(
+      child: Text(
+        'Asystent',
+        style: TextStyle(fontSize: 18),
       ),
     );
   }
