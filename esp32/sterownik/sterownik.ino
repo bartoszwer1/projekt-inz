@@ -5,8 +5,8 @@
 #include <math.h>
 
 // Konfiguracja WiFi
-const char* ssid = "TWOJ_SSID";
-const char* password = "TWOJE_HASLO";
+const char* ssid = "Play_2.4Ghz";
+const char* password = "Z12xc34vb5";
 
 // Konfiguracja LED
 #define LED_PIN     3
@@ -15,15 +15,18 @@ const char* password = "TWOJE_HASLO";
 #define COLOR_ORDER GRB
 CRGB leds[LED_COUNT];
 
-// Tryby pracy
+// Pin fotorezystora (ADC)
+#define LDR_PIN 11
+
+// Tryby działania
 enum Mode { NORMAL, ALARM, EVACUATION };
 Mode currentMode = NORMAL;
 
-// Ostatnia akcja w trybie NORMAL: room czy building?
+// Ostatnia akcja
 enum LastAction { ACTION_ROOM, ACTION_BUILDING };
 LastAction lastAction = ACTION_ROOM;
 
-// Parametry pomieszczen: roomSettings[i][0] = cct, roomSettings[i][1] = brightness
+// Ustawienia pomieszczeń [CCT, Jasność]
 int roomSettings[LED_COUNT][2] = {
   {3000, 50},
   {4000, 50},
@@ -32,40 +35,34 @@ int roomSettings[LED_COUNT][2] = {
   {7000, 50}
 };
 
-// Parametry globalne budynku
+// Ustawienia budynku
 int buildingCct = 5000;
 int buildingBrightness = 50;
 
-// Funkcja do konwersji CCT na RGB
+// Konwersja CCT na RGB
 void cctToRGB(int cct, int brightness, uint8_t &r, uint8_t &g, uint8_t &b) {
   float scale = (brightness / 100.0) * 255.0;
   float temperature = cct / 100.0;
   float red, green, blue;
 
-  // Red
   if (temperature <= 66) {
     red = 255;
   } else {
     red = temperature - 60;
     red = 329.698727446 * pow(red, -0.1332047592);
-    if (red < 0) red = 0;
-    if (red > 255) red = 255;
+    red = constrain(red, 0, 255);
   }
 
-  // Green
   if (temperature <= 66) {
     green = temperature;
     green = 99.4708025861 * log(green) - 161.1195681661;
-    if (green < 0) green = 0;
-    if (green > 255) green = 255;
+    green = constrain(green, 0, 255);
   } else {
     green = temperature - 60;
     green = 288.1221695283 * pow(green, -0.0755148492);
-    if (green < 0) green = 0;
-    if (green > 255) green = 255;
+    green = constrain(green, 0, 255);
   }
 
-  // Blue
   if (temperature >= 66) {
     blue = 255;
   } else {
@@ -74,19 +71,18 @@ void cctToRGB(int cct, int brightness, uint8_t &r, uint8_t &g, uint8_t &b) {
     } else {
       blue = temperature - 10;
       blue = 138.5177312231 * log(blue) - 305.0447927307;
-      if (blue < 0) blue = 0;
-      if (blue > 255) blue = 255;
+      blue = constrain(blue, 0, 255);
     }
   }
 
-  r = (uint8_t)(red   * (scale/255.0));
-  g = (uint8_t)(green * (scale/255.0));
-  b = (uint8_t)(blue  * (scale/255.0));
+  r = (uint8_t)(red   * (scale / 255.0));
+  g = (uint8_t)(green * (scale / 255.0));
+  b = (uint8_t)(blue  * (scale / 255.0));
 }
 
 WebServer server(80);
 
-// Funkcje obsługi HTTP
+// Obsługa ustawienia pomieszczenia
 void handleSetRoom() {
   if (!server.hasArg("room") || !server.hasArg("cct") || !server.hasArg("brightness")) {
     server.send(400, "text/plain", "Missing parameters");
@@ -102,21 +98,21 @@ void handleSetRoom() {
     return;
   }
 
-  if (cct < 2300) cct = 2300;
-  if (cct > 7500) cct = 7500;
-  if (brightness < 0) brightness = 0;
-  if (brightness > 100) brightness = 100;
+  cct = constrain(cct, 2300, 7500);
+  brightness = constrain(brightness, 0, 100);
 
   roomSettings[room][0] = cct;
   roomSettings[room][1] = brightness;
 
-  // Zmiana trybu na NORMAL i ostatnia akcja = room
   currentMode = NORMAL;
   lastAction = ACTION_ROOM;
+
+  Serial.printf("Ustawiono Pomieszczenie %d: CCT=%dK, Jasność=%d%%\n", room + 1, cct, brightness);
 
   server.send(200, "text/plain", "OK");
 }
 
+// Obsługa ustawienia budynku
 void handleSetBuilding() {
   if (!server.hasArg("cct") || !server.hasArg("brightness")) {
     server.send(400, "text/plain", "Missing parameters");
@@ -126,10 +122,8 @@ void handleSetBuilding() {
   int cct = server.arg("cct").toInt();
   int brightness = server.arg("brightness").toInt();
 
-  if (cct < 2300) cct = 2300;
-  if (cct > 7500) cct = 7500;
-  if (brightness < 0) brightness = 0;
-  if (brightness > 100) brightness = 100;
+  cct = constrain(cct, 2300, 7500);
+  brightness = constrain(brightness, 0, 100);
 
   buildingCct = cct;
   buildingBrightness = brightness;
@@ -137,54 +131,73 @@ void handleSetBuilding() {
   currentMode = NORMAL;
   lastAction = ACTION_BUILDING;
 
+  Serial.printf("Ustawiono Budynek: CCT=%dK, Jasność=%d%%\n", cct, brightness);
+
   server.send(200, "text/plain", "OK");
 }
 
+// Obsługa trybu Alarm
 void handleAlarm() {
   currentMode = ALARM;
+  Serial.println("Tryb: ALARM");
   server.send(200, "text/plain", "ALARM");
 }
 
+// Obsługa trybu Ewakuacja
 void handleEvacuation() {
   currentMode = EVACUATION;
+  Serial.println("Tryb: EVACUATION");
   server.send(200, "text/plain", "EVACUATION");
 }
 
+// Obsługa trybu Normal
 void handleNormal() {
   currentMode = NORMAL;
+  Serial.println("Tryb: NORMAL");
   server.send(200, "text/plain", "NORMAL");
 }
 
+// Obsługa root
 void handleRoot() {
   server.send(200, "text/plain", "ESP32 LED Controller");
 }
 
-// Zmienne do animacji
-unsigned long lastAnimUpdate = 0;
-bool alarmState = false; // dla alarmu miganie
-int evacStep = 0;        // dla ewakuacji
+// Obsługa odczytu fotorezystora
+void handleLight() {
+  int raw = analogRead(LDR_PIN); // Zakres 0-4095 (ADC 12-bit)
+  float percent = (raw / 4095.0) * 100.0;
+  percent = constrain(percent, 0.0, 100.0);
 
+  Serial.printf("Odczyt LDR: %d (%0.2f%%)\n", raw, percent);
+
+  String json = "{ \"light\": " + String((int)percent) + " }";
+  server.send(200, "application/json", json);
+}
+
+unsigned long lastAnimUpdate = 0;
+bool alarmState = false; 
+int evacStep = 0;
+
+// Aktualizacja LED w trybie Normal
 void updateLEDsNormal() {
   if (lastAction == ACTION_ROOM) {
-    // Używamy ustawień indywidualnych
     for (int i = 0; i < LED_COUNT; i++) {
-      uint8_t r,g,b;
+      uint8_t r, g, b;
       cctToRGB(roomSettings[i][0], roomSettings[i][1], r, g, b);
-      leds[i] = CRGB(r,g,b);
+      leds[i] = CRGB(r, g, b);
     }
   } else {
-    // Używamy ustawień globalnych
-    uint8_t r,g,b;
+    uint8_t r, g, b;
     cctToRGB(buildingCct, buildingBrightness, r, g, b);
     for (int i = 0; i < LED_COUNT; i++) {
-      leds[i] = CRGB(r,g,b);
+      leds[i] = CRGB(r, g, b);
     }
   }
   FastLED.show();
 }
 
+// Aktualizacja LED w trybie Alarm
 void updateLEDsAlarm() {
-  // Co sekundę zmieniamy stan diod między czerwonym a zgaszonym
   unsigned long now = millis();
   if (now - lastAnimUpdate > 1000) {
     lastAnimUpdate = now;
@@ -197,20 +210,19 @@ void updateLEDsAlarm() {
   FastLED.show();
 }
 
+// Aktualizacja LED w trybie Ewakuacja
 void updateLEDsEvacuation() {
-  // Co ~500 ms przesuwamy zielony punkt
   unsigned long now = millis();
   if (now - lastAnimUpdate > 500) {
     lastAnimUpdate = now;
     evacStep = (evacStep + 1) % LED_COUNT;
   }
 
-  // W evac mode - jeden LED mocno zielony, reszta lekko zielona
   for (int i = 0; i < LED_COUNT; i++) {
     if (i == evacStep) {
       leds[i] = CRGB::Green;
     } else {
-      leds[i] = CRGB(0,50,0); // ciemniejszy zielony
+      leds[i] = CRGB(0, 30, 0);
     }
   }
   FastLED.show();
@@ -229,12 +241,14 @@ void setup() {
   }
   Serial.println("\nConnected, IP: " + WiFi.localIP().toString());
 
+  // Definicja endpointów
   server.on("/", handleRoot);
   server.on("/set", handleSetRoom);
   server.on("/setBuilding", handleSetBuilding);
   server.on("/alarm", handleAlarm);
   server.on("/evacuation", handleEvacuation);
   server.on("/normal", handleNormal);
+  server.on("/light", handleLight);
 
   server.begin();
 }

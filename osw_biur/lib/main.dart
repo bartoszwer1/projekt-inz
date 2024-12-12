@@ -55,7 +55,7 @@ class SterownikOsw extends StatefulWidget {
 
 class _SterownikOswState extends State<SterownikOsw>
     with SingleTickerProviderStateMixin {
-  String espIp = "192.168.1.81"; // Change to your ESP32 IP
+  String espIp = "192.168.0.106"; // Change to your ESP32 IP
 
   List<double> roomsCct = [3000, 4000, 5000, 6000, 7000];
   List<double> roomsBrightness = [50, 50, 50, 50, 50];
